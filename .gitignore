@@ -1,0 +1,7 @@
+node_modules
+db/
+tests/
+tests-examples/
+send_sms_test.js
+ui-debug.log
+.env
