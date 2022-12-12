@@ -1,10 +1,9 @@
-const crypto = require('crypto');
-const { MongoClient,ServerApiVersion } = require("mongodb");
-const fs = require('fs');
-const logger = require('../logger');
+import crypto from 'crypto';
+import { MongoClient,ServerApiVersion } from 'mongodb';
+import logger from '../logger.js';
 
 
-class DataAccessManager {
+export default class DataAccessManager {
     constructor() {
       const credentials = process.env.MONGO_DB_CREDENTIALS;
       this.mongoClient = new MongoClient(process.env.MONGO_DB_URL, {
@@ -121,5 +120,5 @@ class DataAccessManager {
       return result.browserId;
     }    
 }
-module.exports = DataAccessManager;
+// module.exports = DataAccessManager;
   

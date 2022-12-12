@@ -1,8 +1,8 @@
-const { Configuration, OpenAIApi } = require("openai");
-const logger = require('../logger');
+import { Configuration, OpenAIApi } from "openai";
+import logger from '../logger.js';
 
 
-class openAI {
+export default class openAI {
     constructor() {
         // logger.info(process.env.OPENAI_API_KEY)
         this.configuration = new Configuration({apiKey: process.env.OPENAI_API_KEY});
@@ -37,5 +37,3 @@ class openAI {
         
     }
 }
-
-module.exports = openAI;

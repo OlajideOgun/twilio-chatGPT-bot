@@ -1,19 +1,22 @@
-const puppeteer = require('puppeteer-extra')
-const StealthPlugin = require('puppeteer-extra-plugin-stealth')
-puppeteer.use(StealthPlugin())
-const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker')
-puppeteer.use(AdblockerPlugin({ blockTrackers: true }))
-const {executablePath} = require('puppeteer')
-const DataAccessManager = require('./dataAccessManager');
-const logger = require('../logger');
-const util = require('util');
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import AdblockerPlugin from 'puppeteer-extra-plugin-adblocker';
+import {executablePath} from 'puppeteer';
+import DataAccessManager from './dataAccessManager.js';
+import logger from '../logger.js';
+import * as chatGPT from 'chatgpt';
+import getSession from './test.js';
+
+// Use the plugins
+puppeteer.use(StealthPlugin());
+puppeteer.use(AdblockerPlugin({blockTrackers: true}));
 
 
-// const DataAccessManager = require('./src/dataAccessManager');
 
 
 
-class ChatGPT {
+
+export default class ChatGPT {
   constructor() {
     this.browser = null;
     this.dataAccessManager = new DataAccessManager();
@@ -49,13 +52,15 @@ class ChatGPT {
 
   async createBrowser() {
     try {
-      // this.browser = await puppeteer.launch({ headless: false, product: 'chrome', });
+
+
+      this.browser = await puppeteer.launch({ headless: false, executablePath:executablePath() });
     //need to confiure the launch options more here
 
-    const browserWSEndpoint = 'ws://127.0.0.1:9222/devtools/browser/96f686d4-21ef-4851-ba16-cd283d539fcc';
+    // const browserWSEndpoint = 'ws://127.0.0.1:9222/devtools/browser/aa087139-08e0-423e-bb0c-1556e3011897';
 
-    logger.info(`Connecting to browser with endpoint: ${browserWSEndpoint}`);
-    this.browser = await puppeteer.connect({browserWSEndpoint:browserWSEndpoint,headless: false});
+    // logger.info(`Connecting to browser with endpoint: ${browserWSEndpoint}`);
+    // this.browser = await puppeteer.connect({browserWSEndpoint:browserWSEndpoint,headless: false});
 
     // return browser object
     // this.browser = await puppeteer.launch(
@@ -138,13 +143,46 @@ class ChatGPT {
 
   async getChatGPTResponse(userPhoneNumber,userTextMessage) {
 
-    const browserContext = await this.getBrowserContext(userPhoneNumber);
-    await this.navigateToPageWithNewBrowserContext(browserContext, "https://chat.openai.com/");
-    const chatGPTAnswer = await this.sendChat(browserContext,userTextMessage);
+    //check if session token , and cloudfare token is in db
+    // if it is not then we need to stop and ask for their user name and passworq
+    // once we have username and password we try and start auto chrome task to get the session token and cloudflare token and store them in the db
+    // we also get the user agent and store it in the db
 
-    return chatGPTAnswer + " - GPT3";
+    // now that we have session token and cloudflare token we initialize the chatGPT api with the session token and cloudflare token
+    const api = new chatGPT.ChatGPTAPI({
+      sessionToken: process.env.SESSION_TOKEN,
+    });
+
+    //check db if session token exists
+    //if it does not exist then try and get a new session token
+
+    //if there is a session token then use it to send the message to chatGPT
+
+
+
+    // ensure the API is properly authenticated
+    await api.ensureAuth()
+
+    // send a message and wait for the response
+    // const chatGPTAnswer = await api.sendMessage('Write a python version of bubble sort.');
+
+    // return chatGPTAnswer + " - GPT3";
+    
+
+    // logger.info(`ChatGPT response: ${response}`);
+    // await getSession("olajideogun123@gmail.com","test");
+  
+    // const browserContext = await this.getBrowserContext(userPhoneNumber);
+    // this.browser = await this.createBrowser();
+    // await this.navigateToPageWithNewBrowserContext(this.browser.defaultBrowserContext(), "https://chat.openai.com/auth/login");
+    // const chatGPTAnswer = await this.sendChat(browserContext,userTextMessage);
+
+    return chatGPTAnswer;
 
   }
+
+    
+
 
   async sendChat(browserContext,userTextMessage) {
 
@@ -278,8 +316,6 @@ class ChatGPT {
 
   }
 }
-
-module.exports = ChatGPT;
 
 
 

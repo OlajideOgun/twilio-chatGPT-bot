@@ -1,23 +1,22 @@
-require('dotenv').config();
-const bodyParser = require('body-parser')
-const express = require('express');
-const twilio = require('twilio')
-const logger = require('./logger');
-const pinoHTTP = require('pino-http');
-
-const { MessagingResponse } = require('twilio').twiml;
-const ChatGPT = require('./src/chatGPT');
-const OpenAI = require('./src/openAI');
+import bodyParser from 'body-parser'
+import express from 'express';
+import logger from './logger.js';
+import ChatGPT from './src/chatGPT.js';
+import OpenAI from './src/openAI.js';
+import twilio from 'twilio';
+import dotenv from 'dotenv';
+import dadJoke from '@mikemcbride/dad-jokes';
 
 
-//set up twilio client
+
+dotenv.config();
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = twilio(accountSid, authToken);
 
 const app = express();
 const chatGPT = new ChatGPT();
-chatGPT.createBrowser();
+// chatGPT.createBrowser();
 const openAI = new OpenAI();
 // app.use(
 //   pinoHTTP({
@@ -61,21 +60,31 @@ app.post('/sms', urlencodedParser, async (req, res) => {
   logger.info(`Received SMS from: ${userPhoneNumber}`);
   logger.info(`Text message: ${textMessageBody}`);
 
-  const twiml = new MessagingResponse();
+  const message = new twilio.twiml.MessagingResponse();
   
   
   try {
 
+    message.message('chatGPT is having a hard time thinking right now. Please try again later. In the mean time heres a joke');
+    res.status(200).type('text/xml').send(message.toString());
+    client.messages.create({
+      body: dadJoke.random(),
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: req.body.From
+    });
+
+    
+
     if(textMessageBody.toLowerCase() === "new convo" || textMessageBody.toLowerCase() === "new conversation")
     {
-      twiml.message('Resetting ur convo...');
-      res.status(200).type('text/xml').send(twiml.toString());
+      message.message('Resetting ur convo...');
+      res.status(200).type('text/xml').send(message.toString());
       await chatGPT.resetConversation(userPhoneNumber);
     }
     else {
 
-      twiml.message('I am thinking...');
-      res.status(200).type('text/xml').send(twiml.toString());    
+      message.message('I am thinking...');
+      res.status(200).type('text/xml').send(message.toString());    
 
       const chatGPTResponse = await chatGPT.getChatGPTResponse(userPhoneNumber, textMessageBody);
       
@@ -83,21 +92,21 @@ app.post('/sms', urlencodedParser, async (req, res) => {
       if (chatGPTResponse.length > 1600) {
 
         splitMessage(chatGPTResponse).forEach(message => {
-          client.messages.create({
-            body: message,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: req.body.From
-          });
+          // client.messages.create({
+          //   body: message,
+          //   from: process.env.TWILIO_PHONE_NUMBER,
+          //   to: req.body.From
+          // });
         });
 
       }
       else {
 
-        client.messages.create({
-          body: chatGPTResponse,
-          from: process.env.TWILIO_PHONE_NUMBER,
-          to: req.body.From
-        });
+        // client.messages.create({
+        //   body: chatGPTResponse,
+        //   from: process.env.TWILIO_PHONE_NUMBER,
+        //   to: req.body.From
+        // });
       }
     }
   }
@@ -107,11 +116,11 @@ app.post('/sms', urlencodedParser, async (req, res) => {
     logger.customError(error);
 
     // npm package to generate punchline jokes
-    client.messages.create({
-      body: "Sorry we hit an error. Please try again later. :(",
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: req.body.From
-    });
+    // client.messages.create({
+    //   body: "Sorry we hit an error. Please try again later. :(",
+    //   from: process.env.TWILIO_PHONE_NUMBER,
+    //   to: req.body.From
+    // });
     // res.status(500).send({ error: "An error occurred" });
     }
 });

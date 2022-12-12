@@ -1,6 +1,5 @@
-const moment = require('moment');
-const util = require('util');
-const pino = require('pino')
+import moment from 'moment';
+import pino from 'pino';
 const logger = pino({
   destination:{
     sync: true
@@ -81,6 +80,4 @@ logger.customError = (error, details = '', LogLevel = 'error') => {
       logger.error(errorInfo);
   }
 };
-
-module.exports = logger
-
+export default logger;
