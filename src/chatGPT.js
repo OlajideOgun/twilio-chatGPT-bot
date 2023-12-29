@@ -170,7 +170,7 @@ export default class ChatGPT {
     
 
     // logger.info(`ChatGPT response: ${response}`);
-    // await getSession("olajideogun123@gmail.com","test");
+    // await getSession("xxxx@gmail.com","test");
   
     // const browserContext = await this.getBrowserContext(userPhoneNumber);
     // this.browser = await this.createBrowser();
@@ -213,7 +213,7 @@ export default class ChatGPT {
     await page.waitForNavigation();
 
     const username = await page.waitForSelector('input[name="username"]');
-    await username.type('olajideogun123@gmail.com');
+    await username.type('xxxxxx@gmail.com');
     await page.click('button[type="submit"]');
     // await page.waitForNavigation();
 
